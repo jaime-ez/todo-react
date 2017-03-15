@@ -272,3 +272,6 @@ body.login {
 #credits a {
 	color: #888;
 }
+ul {
+  list-style-type: none;
+}
