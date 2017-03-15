@@ -1,31 +1,29 @@
-var express = require('express'),
-    config = require('./config'),
-    http = require('http'),
-    app = express(),
-    server,
-    routes;
+var express = require('express')
+var config = require('./config')
+var http = require('http')
+var app = express()
+var server = http.createServer(app)
+var bodyParser = require('body-parser')
 
-var port = 8080;
+var port = 8080
 
-server = http.createServer(app);
-config(app);
+config(app)
+app.use(bodyParser.json())
 
-routes = [
+var routes = [
   './apps/web/routes',
   './apps/todos/routes'
-];
+]
 
-routes.forEach(function(path) {
-  require(path)(app);
-});
+routes.forEach(function (path) {
+  require(path)(app)
+})
 
-server.listen(port, function(err) {
+server.listen(port, function (err) {
   if (err) {
-    console.error('Unable to listen for connections', err);
-    process.exit(1);
+    console.error('Unable to listen for connections', err)
+    process.exit(1)
   }
 
-  console.log('running on port', port);
-});
-
-
+  console.log('running on port', port)
+})
