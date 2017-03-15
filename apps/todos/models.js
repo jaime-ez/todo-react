@@ -1,6 +1,6 @@
 var db = require('mongoose')
+db.Promise = Promise
 
-var ObjectId = db.Schema.ObjectId
 var Schema = new (db.Schema)({
   title: {type: String, trim: true, required: true},
   done: {type: Boolean, default: false}
@@ -28,7 +28,7 @@ Schema.statics.fetch = function (args, fn) {
 }
 
 Schema.statics.change = function (who, what, fn) {
-  return Todo.findOneAndUpdate(who, what, fn)
+  return Todo.findOneAndUpdate(who, what, {new: true}, fn)
 }
 
 Schema.statics.removelo = function (args, fn) {
