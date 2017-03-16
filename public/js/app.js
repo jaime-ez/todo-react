@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 // addons
-
+var marked = false
 var List = React.createClass({
   getInitialState: function () {
     return { items: []}
@@ -61,8 +61,8 @@ var List = React.createClass({
     $.ajax({
       type: 'PUT',
       url: this.props.source + '/' + newData.id,
-			contentType: 'application/json; charset=utf-8',
-			data: JSON.stringify(newData),
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify(newData),
       success: function (data) {
         var items = this.state.items
         items[newData.id] = data
@@ -74,19 +74,25 @@ var List = React.createClass({
       }.bind(this)
     })
   },
-	clearCompleted: function () {
-		var items = this.state.items
-		console.log('items', items);
 
-		Object.keys(this.state.items).map(function (id) {
-			if (this.state.items[id].done == true) {
-				this.removeItem(id)
-			}
-		}.bind(this))
-	},
+  clearCompleted: function () {
+    Object.keys(this.state.items).map(function (id) {
+      if (this.state.items[id].done == true) {
+        this.removeItem(id)
+      }
+    }.bind(this))
+  },
+
+  markAllItems: function () {
+    marked = !marked
+    Object.keys(this.state.items).map(function (id) {
+      this.updateItem({id: id, done: marked})
+    }.bind(this))
+  },
 
   render: function () {
-		var footer = null
+    var footer = null
+    var markAll = null
     // render items
     var renderedItems = Object.keys(this.state.items).map(function (id) {
       var item = this.state.items[id]
@@ -101,16 +107,17 @@ var List = React.createClass({
       )
     }.bind(this))
 
-		if (renderedItems.length > 0) {
-			var count = 0
-			renderedItems.forEach(function (e) {
-				if (!e.props.checked) {
-					++count
-				}
-			})
+    if (renderedItems.length > 0) {
+      var count = 0
+      renderedItems.forEach(function (e) {
+        if (!e.props.checked) {
+          ++count
+        }
+      })
 
-			footer = <Footer count={count} onClearCompleted={this.clearCompleted}/>
-		}
+      footer = <Footer count={count} onClearCompleted={this.clearCompleted} />
+      markAll = <MarkAll onMarkAll={this.markAllItems} />
+    }
 
     return (
       <div>
@@ -118,10 +125,11 @@ var List = React.createClass({
           <h1>Todos</h1>
           <ItemNewField saveCallback={this.addItem} />
         </header>
+        {markAll}
         <div className='list'>
-          <ul id="todo-list">{renderedItems}</ul>
+          <ul id='todo-list'>{renderedItems}</ul>
         </div>
-				{footer}
+        {footer}
       </div>
     )
   }
@@ -174,7 +182,7 @@ var ItemField = React.createClass({
   },
 
   onKeyPress: function (evt) {
-    if (evt.key === 'Enter' ) {
+    if (evt.key === 'Enter') {
       this.save()
     }
   },
@@ -263,22 +271,22 @@ var ItemField = React.createClass({
 
 var Item = React.createClass({
   render: function () {
-		var done = this.props.checked ? 'done' : ''
+    var done = this.props.checked ? 'done' : ''
     return (
       <li className={done}>
-			<div className="view">
-        <ItemCheckbox
-          id={this.props.id}
-          checked={this.props.checked}
-          updateCallback={this.props.updateCallback}
+        <div className='view'>
+          <ItemCheckbox
+            id={this.props.id}
+            checked={this.props.checked}
+            updateCallback={this.props.updateCallback}
                 />
-        <ItemField
-          id={this.props.id}
-          initialValue={this.props.value}
-          updateCallback={this.props.updateCallback}
-          deleteCallback={this.props.deleteCallback}
+          <ItemField
+            id={this.props.id}
+            initialValue={this.props.value}
+            updateCallback={this.props.updateCallback}
+            deleteCallback={this.props.deleteCallback}
                 />
-			</div>
+        </div>
       </li>
     )
   }
@@ -295,7 +303,7 @@ var ItemCheckbox = React.createClass({
 
   render: function () {
     return (
-      <input className="toggle" type='checkbox' ref='box' checked={this.props.checked} onChange={this.handleChange} />
+      <input className='toggle' type='checkbox' ref='box' checked={this.props.checked} onChange={this.handleChange} />
     )
   }
 })
@@ -305,39 +313,33 @@ var DeleteButton = React.createClass({
     this.props.deleteCallback(this.props.id)
   },
   render: function () {
-    return <a className='destroy' onClick={this.handleClick}></a>
+    return <a className='destroy' onClick={this.handleClick} />
   }
 })
 
 var Footer = React.createClass({
-	render: function () {
-		return (
-			<div className="todo-count">
-				<b>{this.props.count}</b>Items Left
-				<a id="clear-completed" onClick={this.props.onClearCompleted}>Clear completed</a>
-			</div>
-		)
-	}
+  render: function () {
+    return (
+      <div className='todo-count'>
+        <b>{this.props.count}</b>Items Left
+				<a id='clear-completed' onClick={this.props.onClearCompleted}>Clear completed</a>
+      </div>
+    )
+  }
+})
+
+var MarkAll = React.createClass({
+  render: function () {
+    return (
+      <div>
+        <input id='toggle-all' type='checkbox' onChange={this.props.onMarkAll} />
+        <label>Mark all as complete</label>
+      </div>
+    )
+  }
 })
 
 ReactDOM.render(
   <List source='/todos' />,
     document.getElementById('todoapp')
 )
-
-
-// var Greeting = React.createClass({
-//   render: function () {
-//     return (
-//       <header>
-//         <h1>Todos</h1>
-//         <input id='new-todo' type='text' placeholder='What needs to be done?' />
-//       </header>
-//     )
-//   }
-// })
-//
-// ReactDOM.render(
-//   <Greeting />,
-//   document.getElementById('todoapp')
-// )
